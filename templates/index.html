@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>GPT 번역기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+    integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body class="flex flex-col h-[100vh] w-full items-center justify-center gap-[30px]">
+    <h1 class="text-center text-[30px] text-bold">챗GPT 번역기</h1>
+    <section class="w-full max-w-[1024px] mx-auto text-center">
+        <h2 class="">어느 언어로 번역하시겠습니까?</h2>
+        <input id="language" type="text" class="w-[200px] border" />
+        <select id="language-select" class="border">
+            <option selected value="">직접입력</option>
+            <option value="en">English</option>
+            <option value="ko">Korean</option>
+            <option value="cn">Chinese</option>
+            <option value="jp">Japanese</option>
+        </select>
+    </section>
+    <section class="w-full max-w-[1024px] mx-auto flex items-end gap-[5px]">
+        <div>
+            <h2>INSERT</h2>
+            <textarea id="text" class="w-[500px] h-[400px] border-dashed border-2"></textarea>
+        </div>
+        <div>
+            <h2>RESULT</h2>
+            <textarea id="result" class="w-[500px] h-[400px] border-dashed border-2"></textarea>
+        </div>
+    </section>
+
+    <script>
+        const textareaEl = document.querySelector("#text");
+        const languageEl = document.querySelector("#language");
+        const languageSelectEl = document.querySelector("#language-select");
+        const buttonEl = document.querySelector("#button");
+        const resultEl = document.querySelector("#result");
+
+        const handler = async function (e) {
+            const text = textareaEl.value
+            const language = languageEl.value
+            if (text && language) {
+                resultEl.value = "Loading..."
+                await fetch("http://127.0.0.1:81/translater", {
+                    "method": "post",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({text, language})
+                })
+                .then((response) => response.text())
+                .then((data) => {
+                    resultEl.value = data
+                })
+            }
+        }
+        textareaEl.addEventListener("keydown", _.debounce(handler, 500))
+        languageEl.addEventListener("keydown", _.debounce(handler, 500))
+        languageSelectEl.addEventListener("change", function (e) {
+            switch (e.target.value) {
+                case "ko": languageEl.value = "Korean";
+                languageEl.readOnly = true;
+                handler()
+                break;
+                case "en": languageEl.value = "English";
+                languageEl.readOnly = true;
+                handler()
+                break;
+                case "cn": languageEl.value = "Chinese";
+                languageEl.readOnly = true;
+                handler()
+                break;
+                case "jp": languageEl.value = "Japanese";
+                languageEl.readOnly = true;
+                handler()
+                break;
+                default: languageEl.value = "";
+                languageEl.readOnly = false;
+                return;
+            }
+        })
+    </script>
+</body>
+</html>
